@@ -17,6 +17,7 @@
     "Gratus Practice": "🎵",
     "Math": "🔢",
     "Bharatanatyam": "💃",
+"Dance": "💃",
     "Arts & Crafts": "🎨",
     "Phonics": "📖",
     "Swimming": "🏊"
@@ -36,7 +37,7 @@
       { "start": "18:00", "end": "19:00", "activity": "Bharatanatyam", "kids": ["Ananya"] }
     ],
     "Tuesday": [
-      { "start": "18:00", "end": "19:30", "activity": "Arts & Crafts", "kids": ["Aadhiya", "Ananya"] }
+      { "start": "18:00", "end": "19:30", "activity": "Dance", "kids": ["Aadhiya", "Ananya"] }
     ],
     "Wednesday": [
       { "start": "08:30", "end": "09:30", "activity": "Phonics", "kids": [] }
