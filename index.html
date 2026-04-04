@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a0533" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KidsSchedule" />
+  <meta name="description" content="Smart schedule tracker for Ananya & Aadhiya" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>" />
+  <title>KidsSchedule ✨</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ananya: #a855f7;
+      --ananya-light: #f3e8ff;
+      --ananya-mid: #d8b4fe;
+      --aadhiya: #10b981;
+      --aadhiya-light: #d1fae5;
+      --aadhiya-mid: #6ee7b7;
+      --both: #f59e0b;
+      --both-light: #fef3c7;
+      --phonics: #3b82f6;
+      --phonics-light: #dbeafe;
+      --bg: #0f0a1e;
+      --surface: #1a1030;
+      --card: #241840;
+      --border: #3d2a6e;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: #f1eeff;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+    }
+
+    h1, h2, .fredoka { font-family: 'Fredoka One', cursive; }
+
+    /* Starfield background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 80%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 60%, rgba(168,85,247,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 30%, rgba(16,185,129,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-shell { position: relative; z-index: 1; }
+
+    /* Header */
+    .app-header {
+      background: linear-gradient(135deg, #1a0533 0%, #0f1a33 100%);
+      border-bottom: 1px solid var(--border);
+      padding: env(safe-area-inset-top, 0) 0 0;
+    }
+
+    /* Nav tabs */
+    .nav-tab {
+      flex: 1;
+      padding: 12px 8px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      transition: all 0.25s ease;
+      border-bottom: 3px solid transparent;
+      color: #9d8ec4;
+      cursor: pointer;
+    }
+    .nav-tab.active {
+      color: #e9d5ff;
+      border-bottom-color: #a855f7;
+    }
+
+    /* Cards */
+    .event-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .event-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 18px 0 0 18px;
+    }
+    .event-card.ananya::before { background: var(--ananya); }
+    .event-card.aadhiya::before { background: var(--aadhiya); }
+    .event-card.both::before { background: var(--both); }
+    .event-card.phonics::before { background: var(--phonics); }
+
+    .event-card:active { transform: scale(0.98); }
+
+    /* Next class hero card */
+    .next-class-hero {
+      background: linear-gradient(135deg, #2d1050 0%, #1a0d3d 100%);
+      border: 1px solid #6b21a8;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25), 0 0 0 1px rgba(168,85,247,0.1);
+    }
+
+    /* Countdown ring */
+    .countdown-ring {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: conic-gradient(#a855f7 0%, #7c3aed 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(168,85,247,0.5);
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 20px rgba(168,85,247,0.5); }
+      50% { box-shadow: 0 0 35px rgba(168,85,247,0.8); }
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .badge-ananya { background: rgba(168,85,247,0.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3); }
+    .badge-aadhiya { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-both { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-phonics { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+
+    /* Day section header */
+    .day-header {
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #7c6ea8;
+      padding: 6px 0 10px;
+    }
+    .day-header.today-day { color: #c084fc; }
+
+    /* Week grid */
+    .week-day-section {
+      background: rgba(36, 24, 64, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .week-day-section.today-section {
+      border-color: rgba(168,85,247,0.4);
+      background: rgba(45, 16, 80, 0.5);
+    }
+
+    /* Today badge on week view */
+    .today-pill {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.08em;
+    }
+
+    /* Notification toggle */
+    .toggle-switch {
+      width: 44px; height: 24px;
+      background: #3d2a6e;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .toggle-switch.on { background: #7c3aed; }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: transform 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .toggle-switch.on::after { transform: translateX(20px); }
+
+    /* Slide fade animation */
+    .view-panel { animation: fadeSlideIn 0.25s ease; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    /* Current event highlight */
+    .event-card.current-event {
+      border-color: rgba(16,185,129,0.5);
+      background: rgba(16,185,129,0.08);
+    }
+    .current-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Install banner */
+    #install-banner {
+      background: linear-gradient(135deg, #4c1d95, #1e3a5f);
+      border: 1px solid #6b21a8;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #3d2a6e; border-radius: 999px; }
+
+    /* Safe area padding */
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <header class="app-header sticky top-0 z-50">
+    <div class="flex items-center justify-between px-4 pt-4 pb-2">
+      <div>
+        <h1 class="text-2xl text-white leading-none">KidsSchedule ✨</h1>
+        <p id="current-date-label" class="text-xs text-purple-300 mt-0.5 font-semibold"></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Notif toggle -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-purple-300 font-bold">🔔</span>
+          <div class="toggle-switch" id="notif-toggle" onclick="toggleNotifications()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAV TABS -->
+    <div class="flex px-2 mt-2">
+      <button class="nav-tab active" id="tab-today" onclick="switchView('today')">📅 Today</button>
+      <button class="nav-tab" id="tab-week" onclick="switchView('week')">🗓 This Week</button>
+    </div>
+  </header>
+
+  <!-- INSTALL BANNER -->
+  <div id="install-banner" class="hidden mx-4 mt-3 rounded-2xl p-3 flex items-center gap-3">
+    <span class="text-2xl">📲</span>
+    <div class="flex-1 min-w-0">
+      <p class="text-xs font-bold text-white">Add to Home Screen</p>
+      <p class="text-xs text-purple-300">Install for quick daily access</p>
+    </div>
+    <button onclick="installApp()" class="bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0">Install</button>
+    <button onclick="dismissInstall()" class="text-purple-400 text-lg leading-none ml-1">×</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="px-4 pt-4 pb-24">
+
+    <!-- TODAY VIEW -->
+    <div id="view-today" class="view-panel">
+
+      <!-- Next Class Hero -->
+      <div id="next-class-section"></div>
+
+      <!-- Today's Full Schedule -->
+      <div id="today-schedule-section" class="mt-4"></div>
+
+    </div>
+
+    <!-- WEEK VIEW -->
+    <div id="view-week" class="view-panel hidden"></div>
+
+  </main>
+</div>
+
+<script>
+// ─── SCHEDULE DATA (loaded from schedule.json) ───────────────────────────────
+let SCHEDULE = {};
+let ACTIVITY_EMOJIS = {};
+let KIDS_META = [];
+const DEFAULT_EMOJI = '⭐';
+const DAY_ORDER = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+async function loadSchedule() {
+  try {
+    const res = await fetch('schedule.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    SCHEDULE       = data.schedule       || {};
+    ACTIVITY_EMOJIS = data.activityEmojis || {};
+    KIDS_META       = data.kids           || [];
+  } catch (err) {
+    console.error('Failed to load schedule.json:', err);
+    showLoadError();
+  }
+}
+
+function showLoadError() {
+  document.getElementById('next-class-section').innerHTML = `
+    <div class="text-center py-10">
+      <div class="text-5xl mb-3">⚠️</div>
+      <p class="text-purple-300 font-bold">Could not load schedule.</p>
+      <p class="text-purple-500 text-sm mt-1">Make sure schedule.json is in the same folder.</p>
+    </div>`;
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentView = 'today';
+let notificationsEnabled = false;
+let scheduledNotifs = [];
+let timerInterval = null;
+let deferredInstallPrompt = null;
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function todayName() {
+  return DAY_ORDER[new Date().getDay()];
+}
+
+function timeToMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function nowMinutes() {
+  const n = new Date();
+  return n.getHours() * 60 + n.getMinutes();
+}
+
+function fmt12(time24) {
+  const [h, m] = time24.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function getKidClass(kids) {
+  if (!kids || kids.length === 0) return 'phonics';
+  if (kids.length > 1) return 'both';
+  return kids[0].toLowerCase();
+}
+
+function getBadgeClass(kids) {
+  const k = getKidClass(kids);
+  return `badge badge-${k}`;
+}
+
+function getBadgeLabel(kids) {
+  if (!kids || kids.length === 0) return '📖 Class';
+  if (kids.length > 1) return '👧👧 Both';
+  const meta = KIDS_META.find(k => k.name === kids[0]);
+  return meta ? `${meta.emoji} ${meta.name}` : kids[0];
+}
+
+function getEmoji(activity) {
+  return ACTIVITY_EMOJIS[activity] || DEFAULT_EMOJI;
+}
+
+function formatCountdown(diffMin) {
+  if (diffMin < 1) return 'NOW';
+  if (diffMin < 60) return `${diffMin}m`;
+  const h = Math.floor(diffMin / 60);
+  const m = diffMin % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+function todayEvents() {
+  return (SCHEDULE[todayName()] || []).slice().sort((a, b) =>
+    timeToMinutes(a.start) - timeToMinutes(b.start)
+  );
+}
+
+function getNextEvent(events) {
+  const now = nowMinutes();
+  // Currently happening
+  const current = events.find(e => now >= timeToMinutes(e.start) && now < timeToMinutes(e.end));
+  if (current) return { event: current, isNow: true, diffMin: 0 };
+  // Upcoming
+  const upcoming = events.find(e => timeToMinutes(e.start) > now);
+  if (upcoming) {
+    return { event: upcoming, isNow: false, diffMin: timeToMinutes(upcoming.start) - now };
+  }
+  return null;
+}
+
+// ─── RENDERING ────────────────────────────────────────────────────────────────
+function renderEventCard(ev, highlight = false, isNow = false) {
+  const kidClass = getKidClass(ev.kids);
+  const emoji = getEmoji(ev.activity);
+  const label = getBadgeLabel(ev.kids);
+  const badgeCls = getBadgeClass(ev.kids);
+  const now = nowMinutes();
+  const isPast = timeToMinutes(ev.end) <= now;
+
+  return `
+    <div class="event-card ${kidClass} ${isNow ? 'current-event' : ''} ${isPast ? 'opacity-50' : ''}">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-2xl flex-shrink-0">${emoji}</span>
+          <div class="min-w-0">
+            <div class="font-bold text-base text-white leading-tight truncate">
+              ${isNow ? '<span class="current-dot mr-1"></span>' : ''}${ev.activity}
+            </div>
+            <div class="text-xs text-purple-300 font-semibold mt-0.5">
+              ${fmt12(ev.start)} – ${fmt12(ev.end)}
+            </div>
+          </div>
+        </div>
+        <span class="${badgeCls}">${label}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderNextClassHero(next) {
+  if (!next) {
+    return `
+      <div class="empty-state">
+        <div class="text-6xl mb-4">🎉</div>
+        <h2 class="text-2xl text-white mb-2">No Classes Today!</h2>
+        <p class="text-purple-300 text-sm">Enjoy your free day ✨</p>
+      </div>
+    `;
+  }
+
+  const { event: ev, isNow, diffMin } = next;
+  const emoji = getEmoji(ev.activity);
+  const badgeCls = getBadgeClass(ev.kids);
+  const label = getBadgeLabel(ev.kids);
+
+  const countdownLabel = isNow
+    ? `<span class="current-dot"></span> Happening now`
+    : `Starts in`;
+
+  const timeDisplay = isNow ? 'NOW' : formatCountdown(diffMin);
+
+  return `
+    <div class="next-class-hero p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-xs font-black text-purple-400 tracking-widest uppercase">${isNow ? '🟢 In Progress' : '⏭ Next Class'}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="countdown-ring" id="countdown-ring">
+          <div style="text-align:center">
+            <div class="text-white font-black leading-tight" id="hero-countdown" style="font-size:1rem">${timeDisplay}</div>
+            <div class="text-purple-300" style="font-size:0.6rem">${isNow ? 'NOW' : 'LEFT'}</div>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-3xl leading-none mb-1">${emoji}</div>
+          <h2 class="text-xl font-black text-white leading-tight">${ev.activity}</h2>
+          <div class="text-sm text-purple-300 font-semibold">${fmt12(ev.start)} – ${fmt12(ev.end)}</div>
+          <span class="${badgeCls} mt-2 inline-flex">${label}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTodayView() {
+  const events = todayEvents();
+  const next = getNextEvent(events);
+  const now = nowMinutes();
+
+  // Hero
+  document.getElementById('next-class-section').innerHTML = renderNextClassHero(next);
+
+  // Full schedule
+  const schedEl = document.getElementById('today-schedule-section');
+  if (events.length === 0) {
+    schedEl.innerHTML = '';
+    return;
+  }
+
+  let html = `<h3 class="day-header today-day">${todayName()}'s Full Schedule</h3>`;
+  html += `<div class="flex flex-col gap-2">`;
+  events.forEach(ev => {
+    const nowMin = nowMinutes();
+    const isNow = nowMin >= timeToMinutes(ev.start) && nowMin < timeToMinutes(ev.end);
+    html += renderEventCard(ev, false, isNow);
+  });
+  html += `</div>`;
+  schedEl.innerHTML = html;
+}
+
+function renderWeekView() {
+  const el = document.getElementById('view-week');
+  const today = todayName();
+  // Reorder starting from today
+  const todayIdx = DAY_ORDER.indexOf(today);
+  const ordered = [...DAY_ORDER.slice(todayIdx), ...DAY_ORDER.slice(0, todayIdx)];
+
+  let html = '';
+  ordered.forEach(day => {
+    const events = (SCHEDULE[day] || []).slice().sort((a,b) =>
+      timeToMinutes(a.start) - timeToMinutes(b.start)
+    );
+    const isToday = day === today;
+
+    html += `
+      <div class="week-day-section ${isToday ? 'today-section' : ''}">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="day-header ${isToday ? 'today-day' : ''} mb-0">${day}</span>
+          ${isToday ? '<span class="today-pill">TODAY</span>' : ''}
+        </div>
+    `;
+
+    if (events.length === 0) {
+      html += `<p class="text-sm text-purple-600 font-semibold">Free day 🌟</p>`;
+    } else {
+      html += `<div class="flex flex-col gap-2">`;
+      events.forEach(ev => {
+        const nowMin = nowMinutes();
+        const isNow = isToday && nowMin >= timeToMinutes(ev.start) && nowMin < timeToMinutes(ev.end);
+        html += renderEventCard(ev, false, isNow);
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ─── DATE LABEL ───────────────────────────────────────────────────────────────
+function updateDateLabel() {
+  const now = new Date();
+  const opts = { weekday: 'long', month: 'long', day: 'numeric' };
+  document.getElementById('current-date-label').textContent =
+    now.toLocaleDateString('en-CA', opts);
+}
+
+// ─── LIVE TIMER ───────────────────────────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (currentView === 'today') {
+      // Update hero countdown only (lightweight)
+      const events = todayEvents();
+      const next = getNextEvent(events);
+      const heroEl = document.getElementById('hero-countdown');
+      if (heroEl && next) {
+        heroEl.textContent = next.isNow ? 'NOW' : formatCountdown(next.diffMin);
+      }
+      // Re-render every 5 min for full refresh
+      if (new Date().getSeconds() === 0 && new Date().getMinutes() % 5 === 0) {
+        renderTodayView();
+      }
+    }
+  }, 60000);
+}
+
+// ─── VIEW SWITCHING ───────────────────────────────────────────────────────────
+function switchView(view) {
+  currentView = view;
+  document.getElementById('view-today').classList.toggle('hidden', view !== 'today');
+  document.getElementById('view-week').classList.toggle('hidden', view !== 'week');
+  document.getElementById('tab-today').classList.toggle('active', view === 'today');
+  document.getElementById('tab-week').classList.toggle('active', view === 'week');
+
+  if (view === 'week') renderWeekView();
+  else renderTodayView();
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+async function toggleNotifications() {
+  const toggle = document.getElementById('notif-toggle');
+
+  if (!notificationsEnabled) {
+    if (!('Notification' in window)) {
+      alert('Notifications not supported on this browser.');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      notificationsEnabled = true;
+      toggle.classList.add('on');
+      localStorage.setItem('notif', '1');
+      scheduleAllNotifications();
+      showToast('🔔 Reminders enabled!');
+    } else {
+      showToast('❌ Permission denied. Enable in browser settings.');
+    }
+  } else {
+    notificationsEnabled = false;
+    toggle.classList.remove('on');
+    localStorage.setItem('notif', '0');
+    clearScheduledNotifs();
+    showToast('🔕 Reminders off');
+  }
+}
+
+function scheduleAllNotifications() {
+  clearScheduledNotifs();
+  const today = todayName();
+  const events = todayEvents();
+  const now = nowMinutes();
+
+  events.forEach(ev => {
+    const startMin = timeToMinutes(ev.start);
+    const reminderMin = startMin - 10; // 10 min before
+    const diffMs = (reminderMin - now) * 60 * 1000;
+
+    if (diffMs > 0) {
+      const label = ev.kids.length > 0
+        ? `${ev.kids.join(' & ')} ${ev.activity}`
+        : ev.activity;
+      const t = setTimeout(() => {
+        new Notification(`⏰ Reminder: ${label}`, {
+          body: `Starting at ${fmt12(ev.start)} — get ready! 🎒`,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📅</text></svg>',
+          badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📅</text></svg>',
+          tag: `class-${ev.start}`,
+        });
+      }, diffMs);
+      scheduledNotifs.push(t);
+    }
+  });
+}
+
+function clearScheduledNotifs() {
+  scheduledNotifs.forEach(t => clearTimeout(t));
+  scheduledNotifs = [];
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const old = document.getElementById('toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.id = 'toast';
+  t.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 bg-purple-900 border border-purple-700 text-white text-sm font-bold px-4 py-2 rounded-2xl z-50 shadow-xl';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ─── INSTALL PWA ──────────────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!localStorage.getItem('installDismissed')) {
+    document.getElementById('install-banner').classList.remove('hidden');
+  }
+});
+
+async function installApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('install-banner').classList.add('hidden');
+}
+
+function dismissInstall() {
+  document.getElementById('install-banner').classList.add('hidden');
+  localStorage.setItem('installDismissed', '1');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+async function init() {
+  updateDateLabel();
+
+  // Show skeleton while loading
+  document.getElementById('next-class-section').innerHTML = `
+    <div class="next-class-hero p-4 animate-pulse">
+      <div class="h-4 w-28 bg-purple-800 rounded-full mb-4"></div>
+      <div class="flex items-center gap-3">
+        <div class="w-20 h-20 rounded-full bg-purple-800 flex-shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-6 bg-purple-800 rounded-full w-3/4"></div>
+          <div class="h-4 bg-purple-900 rounded-full w-1/2"></div>
+        </div>
+      </div>
+    </div>`;
+
+  await loadSchedule();
+
+  renderTodayView();
+  startTimer();
+
+  // Restore notification pref
+  const saved = localStorage.getItem('notif');
+  if (saved === '1' && 'Notification' in window && Notification.permission === 'granted') {
+    notificationsEnabled = true;
+    document.getElementById('notif-toggle').classList.add('on');
+    scheduleAllNotifications();
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
